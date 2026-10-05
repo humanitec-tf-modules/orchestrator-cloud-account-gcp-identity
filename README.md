@@ -93,7 +93,7 @@ The workload identity pool provider name must contain the project number, not th
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | ~> 7.0 |
 | <a name="requirement_humanitec"></a> [humanitec](#requirement\_humanitec) | ~> 1.0 |
@@ -106,7 +106,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [google_iam_workload_identity_pool.humanitec_oidc](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool) | resource |
 | [google_iam_workload_identity_pool_provider.humanitec_oidc](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool_provider) | resource |
 | [google_service_account.cloud_account](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account) | resource |
@@ -117,7 +117,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_cloud_account_id"></a> [cloud\_account\_id](#input\_cloud\_account\_id) | ID for the Cloud Account. If not set, the module generates an ID with a random suffix | `string` | `null` | no |
 | <a name="input_cloud_account_name"></a> [cloud\_account\_name](#input\_cloud\_account\_name) | Name for the Cloud Account. If not set, will be set to the value of `cloud_account_id` | `string` | `null` | no |
 | <a name="input_gcp_project_id"></a> [gcp\_project\_id](#input\_gcp\_project\_id) | ID of the GCP project in which the module creates GCP objects (service account, workload identity pool and provider). If not set, the project configured for the `google` provider is used | `string` | `null` | no |
@@ -130,7 +130,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_cloud_account_id"></a> [cloud\_account\_id](#output\_cloud\_account\_id) | ID of the Orchestrator Cloud Account |
 | <a name="output_cloud_account_name"></a> [cloud\_account\_name](#output\_cloud\_account\_name) | Name of the Orchestrator Cloud Account |
 | <a name="output_gcp_audience"></a> [gcp\_audience](#output\_gcp\_audience) | Audience of the OIDC token used by the Cloud Account, i.e. the URL of the workload identity pool provider |
