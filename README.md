@@ -60,17 +60,35 @@ resource "google_project_iam_member" "gke_developer" {
 ### Create service account and workload identity pool provider
 
 ```hcl
+module "cloud_account_gcp_identity" {
+  source = "github.com/humanitec-tf-modules/orchestrator-cloud-account-gcp-identity?ref=vX.Y.Z"
+
+  providers = {
+    humanitec = humanitec
+    google    = google
+  }
+
   humanitec_org_id   = "my-org"
   cloud_account_id   = "my-gcp-identity-account"
   cloud_account_name = "My GCP identity account"
   gcp_project_id     = "my-gcp-project"
   service_account_id = "humanitec-access-gke"
+}
 ```
 
 ### Create service account and workload identity pool provider, let module generate names
 
 ```hcl
+module "cloud_account_gcp_identity" {
+  source = "github.com/humanitec-tf-modules/orchestrator-cloud-account-gcp-identity?ref=vX.Y.Z"
+
+  providers = {
+    humanitec = humanitec
+    google    = google
+  }
+
   humanitec_org_id = "my-org"
+}
 ```
 
 The module uses the project configured for the `google` provider.
@@ -80,7 +98,13 @@ The module uses the project configured for the `google` provider.
 ```hcl
 module "cloud_account_gcp_identity" {
   source = "github.com/humanitec-tf-modules/orchestrator-cloud-account-gcp-identity?ref=vX.Y.Z"
-  # ...
+
+  providers = {
+    humanitec = humanitec
+    google    = google
+  }
+
+  humanitec_org_id                     = "my-org"
   workload_identity_pool_provider_name = "projects/123456789012/locations/global/workloadIdentityPools/humanitec-wif-pool/providers/humanitec-wif"
   service_account_create               = false
   service_account_email                = "my-existing-sa@my-gcp-project.iam.gserviceaccount.com"
