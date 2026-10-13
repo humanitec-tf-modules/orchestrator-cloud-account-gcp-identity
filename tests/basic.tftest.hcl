@@ -189,3 +189,122 @@ run "test_invalid_pool_provider_name" {
     var.workload_identity_pool_provider_name,
   ]
 }
+
+run "test_cloud_account_id_min_length" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "ab"
+  }
+
+  assert {
+    condition     = humanitec_resource_account.gcp_identity.id == var.cloud_account_id
+    error_message = "A 2-character cloud_account_id must be accepted"
+  }
+}
+
+run "test_cloud_account_id_max_length" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "a${join("", [for i in range(31) : "-b"])}"
+  }
+
+  assert {
+    condition     = length(humanitec_resource_account.gcp_identity.id) == 63
+    error_message = "A 63-character cloud_account_id must be accepted"
+  }
+}
+
+run "test_cloud_account_id_too_short" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "a"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_too_long" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = join("", [for i in range(64) : "a"])
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_uppercase" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "My-Cloud-Account"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_invalid_characters" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my_cloud.account"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_leading_hyphen" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "-my-cloud-account"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_trailing_hyphen" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my-cloud-account-"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}
+
+run "test_cloud_account_id_consecutive_hyphens" {
+  command = plan
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my--cloud-account"
+  }
+
+  expect_failures = [
+    var.cloud_account_id,
+  ]
+}

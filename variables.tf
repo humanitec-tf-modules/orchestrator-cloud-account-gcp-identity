@@ -5,9 +5,19 @@ variable "humanitec_org_id" {
 }
 variable "cloud_account_id" {
   type        = string
-  description = "ID for the Cloud Account. If not set, the module generates an ID with a random suffix"
+  description = "ID for the Cloud Account. Must be 2–63 chars, only lowercase letters, digits and single hyphens, no leading/trailing hyphen. If not set, the module generates an ID with a random suffix"
   nullable    = true
   default     = null
+
+  validation {
+    condition     = var.cloud_account_id == null ? true : length(var.cloud_account_id) >= 2 && length(var.cloud_account_id) <= 63
+    error_message = "cloud_account_id must be between 2 and 63 characters long"
+  }
+
+  validation {
+    condition     = var.cloud_account_id == null || can(regex("^[a-z0-9](?:-?[a-z0-9]+)+$", var.cloud_account_id))
+    error_message = "cloud_account_id must only contain lowercase letters, digits, and single hyphens, and must not start or end with a hyphen"
+  }
 }
 variable "cloud_account_name" {
   type        = string

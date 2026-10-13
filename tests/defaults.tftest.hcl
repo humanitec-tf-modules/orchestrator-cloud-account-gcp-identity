@@ -170,11 +170,12 @@ run "test_generated_ids_drop_trailing_hyphens" {
 
   variables {
     humanitec_org_id = "my-org"
-    cloud_account_id = "my-very-long-cloud---id"
+    # Truncation to 25 characters cuts right after a hyphen: "hum-my-very-long-account-"
+    cloud_account_id = "my-very-long-account-id"
   }
 
   assert {
-    condition     = google_service_account.cloud_account[0].account_id == "hum-my-very-long-cloud-x9y8"
-    error_message = "The generated service account ID must not contain a hyphen sequence before the suffix"
+    condition     = google_service_account.cloud_account[0].account_id == "hum-my-very-long-account-x9y8"
+    error_message = "The generated service account ID must not contain a double hyphen before the suffix"
   }
 }
