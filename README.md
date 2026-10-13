@@ -113,6 +113,7 @@ No modules.
 | [google_service_account_iam_member.workload_identity_user](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_iam_member) | resource |
 | [humanitec_resource_account.gcp_identity](https://registry.terraform.io/providers/humanitec/humanitec/latest/docs/resources/resource_account) | resource |
 | [random_string.cloud_account_id_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
+| [random_string.generated_id_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 
 ## Inputs
 
@@ -124,7 +125,7 @@ No modules.
 | <a name="input_humanitec_org_id"></a> [humanitec\_org\_id](#input\_humanitec\_org\_id) | Humanitec Organization ID | `string` | n/a | yes |
 | <a name="input_service_account_create"></a> [service\_account\_create](#input\_service\_account\_create) | Whether to create the GCP service account impersonated via the Cloud Account. If `false`, `service_account_email` must be the email of an existing service account. In both cases, the module adds the IAM policy binding allowing the Cloud Account to impersonate the service account | `bool` | `true` | no |
 | <a name="input_service_account_email"></a> [service\_account\_email](#input\_service\_account\_email) | The email of an existing GCP service account impersonated via the Cloud Account. Required if `service_account_create` is `false`, must not be set otherwise | `string` | `null` | no |
-| <a name="input_service_account_id"></a> [service\_account\_id](#input\_service\_account\_id) | The account ID (the part before the `@`) for the service account created by the module. If not set, the module generates an ID including the cloud account id, truncated to 30 characters. Only used if `service_account_create` is `true` | `string` | `null` | no |
+| <a name="input_service_account_id"></a> [service\_account\_id](#input\_service\_account\_id) | The account ID (the part before the `@`) for the service account created by the module. If not set, the module generates an ID from the cloud account id, truncated to 30 characters including a random suffix. Only used if `service_account_create` is `true` | `string` | `null` | no |
 | <a name="input_workload_identity_pool_provider_name"></a> [workload\_identity\_pool\_provider\_name](#input\_workload\_identity\_pool\_provider\_name) | Full resource name of an existing workload identity pool provider for the Humanitec OIDC issuer, like `projects/123456789012/locations/global/workloadIdentityPools/my-pool/providers/my-provider`. Note that it requires the project number, not the project ID. If not set, the module generates a pool and provider as a convenience but doing so is not recommended for production use as they will be bound to this specific Cloud Account lifecycle | `string` | `null` | no |
 
 ## Outputs

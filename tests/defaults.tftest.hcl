@@ -7,18 +7,18 @@ mock_provider "google" {
   # Realistic values for attributes computed by GCP, as the module parses the pool provider name
   mock_resource "google_service_account" {
     defaults = {
-      email = "hum-gcp-identity-abcd1234@my-project.iam.gserviceaccount.com"
-      name  = "projects/my-project/serviceAccounts/hum-gcp-identity-abcd1234@my-project.iam.gserviceaccount.com"
+      email = "hum-gcp-identity-abcd1234-x9y8@my-project.iam.gserviceaccount.com"
+      name  = "projects/my-project/serviceAccounts/hum-gcp-identity-abcd1234-x9y8@my-project.iam.gserviceaccount.com"
     }
   }
   mock_resource "google_iam_workload_identity_pool" {
     defaults = {
-      name = "projects/123456789012/locations/global/workloadIdentityPools/hum-gcp-identity-abcd1234"
+      name = "projects/123456789012/locations/global/workloadIdentityPools/hum-gcp-identity-abcd1234-x9y8"
     }
   }
   mock_resource "google_iam_workload_identity_pool_provider" {
     defaults = {
-      name = "projects/123456789012/locations/global/workloadIdentityPools/hum-gcp-identity-abcd1234/providers/hum-gcp-identity-abcd1234"
+      name = "projects/123456789012/locations/global/workloadIdentityPools/hum-gcp-identity-abcd1234-x9y8/providers/hum-gcp-identity-abcd1234-x9y8"
     }
   }
 }
@@ -30,6 +30,13 @@ mock_provider "random" {
     defaults = {
       result = "abcd1234"
     }
+  }
+}
+
+override_resource {
+  target = random_string.generated_id_suffix
+  values = {
+    result = "x9y8"
   }
 }
 
@@ -61,13 +68,13 @@ run "test_all_default" {
   }
 
   assert {
-    condition     = google_service_account.cloud_account[0].account_id == "hum-gcp-identity-abcd1234"
-    error_message = "The service account ID must default to 'hum-' plus the Cloud Account ID"
+    condition     = google_service_account.cloud_account[0].account_id == "hum-gcp-identity-abcd1234-x9y8"
+    error_message = "The service account ID must default to 'hum-' plus the Cloud Account ID plus a random suffix"
   }
 
   assert {
-    condition     = google_iam_workload_identity_pool.humanitec_oidc[0].workload_identity_pool_id == "hum-gcp-identity-abcd1234"
-    error_message = "The workload identity pool ID must default to 'hum-' plus the Cloud Account ID"
+    condition     = google_iam_workload_identity_pool.humanitec_oidc[0].workload_identity_pool_id == "hum-gcp-identity-abcd1234-x9y8"
+    error_message = "The workload identity pool ID must default to 'hum-' plus the Cloud Account ID plus a random suffix"
   }
 
   assert {
@@ -96,5 +103,78 @@ run "test_all_default" {
   assert {
     condition     = output.service_account_member == "serviceAccount:${google_service_account.cloud_account[0].email}"
     error_message = "The service_account_member output must be the IAM member string of the new service account"
+  }
+}
+
+run "test_new_pool_provider" {
+  command = apply
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my-cloud-account"
+    gcp_project_id   = "my-other-project"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool.humanitec_oidc[0].workload_identity_pool_id == "hum-my-cloud-account-x9y8" && google_iam_workload_identity_pool.humanitec_oidc[0].project == var.gcp_project_id
+    error_message = "The module must create a workload identity pool named after the Cloud Account in gcp_project_id"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool_provider.humanitec_oidc[0].workload_identity_pool_provider_id == "hum-my-cloud-account-x9y8" && google_iam_workload_identity_pool_provider.humanitec_oidc[0].project == var.gcp_project_id
+    error_message = "The module must create a workload identity pool provider named after the Cloud Account in gcp_project_id"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool_provider.humanitec_oidc[0].oidc[0].issuer_uri == "https://idtoken.humanitec.io"
+    error_message = "The workload identity pool provider must use the Humanitec OIDC issuer"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool_provider.humanitec_oidc[0].attribute_mapping == tomap({ "google.subject" = "assertion.sub" })
+    error_message = "The workload identity pool provider must map the token subject to google.subject"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool_provider.humanitec_oidc[0].attribute_condition == "assertion.sub.startsWith(\"my-org/\")"
+    error_message = "The workload identity pool provider must only accept tokens of the Humanitec Organization"
+  }
+
+  assert {
+    condition     = google_service_account.cloud_account[0].account_id == "hum-my-cloud-account-x9y8" && google_service_account.cloud_account[0].project == var.gcp_project_id
+    error_message = "The service account ID must default to 'hum-' plus the Cloud Account ID plus a random suffix in gcp_project_id"
+  }
+}
+
+run "test_long_cloud_account_id" {
+  command = apply
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my-very-long-cloud-account-id-for-gcp"
+  }
+
+  assert {
+    condition     = google_service_account.cloud_account[0].account_id == "hum-my-very-long-cloud-ac-x9y8"
+    error_message = "The generated service account ID must be truncated to 30 characters including the suffix"
+  }
+
+  assert {
+    condition     = google_iam_workload_identity_pool.humanitec_oidc[0].workload_identity_pool_id == "hum-my-very-long-cloud-ac-x9y8"
+    error_message = "The generated workload identity pool ID must be truncated to 30 characters including the suffix"
+  }
+}
+
+run "test_generated_ids_drop_trailing_hyphens" {
+  command = apply
+
+  variables {
+    humanitec_org_id = "my-org"
+    cloud_account_id = "my-very-long-cloud---id"
+  }
+
+  assert {
+    condition     = google_service_account.cloud_account[0].account_id == "hum-my-very-long-cloud-x9y8"
+    error_message = "The generated service account ID must not contain a hyphen sequence before the suffix"
   }
 }

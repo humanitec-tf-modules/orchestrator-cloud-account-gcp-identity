@@ -5,15 +5,23 @@ resource "random_string" "cloud_account_id_suffix" {
   special = false
 }
 
+# Workload identity pools are soft-deleted and their IDs cannot be reused for 30 days, so every module instance needs a fresh suffix
+resource "random_string" "generated_id_suffix" {
+  length  = 4
+  upper   = false
+  special = false
+}
+
 locals {
   cloud_account_type = "gcp-identity"
   cloud_account_id   = var.cloud_account_id != null ? var.cloud_account_id : "gcp-identity-${random_string.cloud_account_id_suffix[0].result}"
   cloud_account_name = var.cloud_account_name != null ? var.cloud_account_name : local.cloud_account_id
 
-  # GCP limits IDs to 30 (service account) or 32 (pool, pool provider) characters. Truncate and drop trailing hyphens
-  generated_id          = "hum-${local.cloud_account_id}"
-  service_account_id    = var.service_account_id != null ? var.service_account_id : replace(substr(local.generated_id, 0, 30), "/-+$/", "")
-  workload_identity_id  = replace(substr(local.generated_id, 0, 32), "/-+$/", "")
+  # GCP limits IDs to 30 (service account) or 32 (pool, pool provider) characters.
+  # Truncate the prefix to 25 characters, drop trailing hyphens and append "-" plus the 4-character suffix for at most 30 characters
+  generated_id          = "${replace(substr("hum-${local.cloud_account_id}", 0, 25), "/-+$/", "")}-${random_string.generated_id_suffix.result}"
+  service_account_id    = var.service_account_id != null ? var.service_account_id : local.generated_id
+  workload_identity_id  = local.generated_id
   service_account_email = var.service_account_create ? google_service_account.cloud_account[0].email : var.service_account_email
   # The "-" wildcard lets GCP infer the project from the service account email
   service_account_name = var.service_account_create ? google_service_account.cloud_account[0].name : "projects/-/serviceAccounts/${var.service_account_email}"

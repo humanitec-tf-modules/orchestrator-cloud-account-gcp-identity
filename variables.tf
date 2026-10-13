@@ -40,7 +40,7 @@ variable "service_account_create" {
 }
 variable "service_account_id" {
   type        = string
-  description = "The account ID (the part before the `@`) for the service account created by the module. If not set, the module generates an ID including the cloud account id, truncated to 30 characters. Only used if `service_account_create` is `true`"
+  description = "The account ID (the part before the `@`) for the service account created by the module. If not set, the module generates an ID from the cloud account id, truncated to 30 characters including a random suffix. Only used if `service_account_create` is `true`"
   nullable    = true
   default     = null
 
