@@ -45,13 +45,6 @@ module "cloud_account_gcp_identity" {
   workload_identity_pool_provider_name = google_iam_workload_identity_pool_provider.humanitec.name
   service_account_id                   = "humanitec-access-gke"
 }
-
-# Grant permissions to the service account
-resource "google_project_iam_member" "gke_developer" {
-  project = "my-gcp-project"
-  role    = "roles/container.developer"
-  member  = module.cloud_account_gcp_identity.service_account_member
-}
 ```
 
 ### Create service account and workload identity pool provider
